@@ -23,10 +23,18 @@
     </header>
 
     <nav class="main-nav-visible">            
-        <ul class="nav-container" id="navContainer"></ul>
+        <ul class="nav-container" id="navContainer">
+            <li><a href="news.html">Новини</a></li>
+            <li><a href="info.html">Інформація про заклад</a></li>
+            <li><a href="rules.html">Зарахування і навчання</a></li>
+            <li><a href="parents.html">Батькам</a></li>
+            <li><a href="students.html">Учням</a></li>
+            <li><a href="gallery.html">Галерея</a></li>
+            <li><a href="war-time.html">Навчання під час воєнного стану</a></li>
+            <li><a href="anti-bullying.html">Протидія булінгу</a></li>
+            <li><a href="safety.html">Без配ека життєдіяльності</a></li>
+        </ul>
     </nav>
-
-    <ul id="leftMenu" class="school-left-menu"></ul>
 
     <a href="rules.html" class="top-family-banner-link">
         <div class="header-banners family-banner">
@@ -80,9 +88,9 @@
             <br>
 
             <div class="widget-title">Останні новини</div>
-            <p style="text-align: right; font-size: 12px; margin-top: 15px;">
-                <a href="news.html" style="color: #cf2e2e; font-weight: bold; text-decoration: none;">Усі Новини →</a>
-            </p>
+            <div id="sidebarNewsContainer">
+                <p style="font-style:italic; color:#64748b; font-size:12px; padding:10px;">Завантаження свіжих новин...</p>
+            </div>
             <br>
 
             <div class="widget-title">Календар</div>
@@ -95,33 +103,20 @@
     </div>
 
     <footer>
-        <p>&copy; 2026 Опорний заклад Нижньосірогозький ліцей<br>Дата останньої зміни: 13 Червня 2026</p>
+        <p>&copy; 2026 Опорний заклад Нижньосірогозький ліцей<br>Дата останньої зміни: 16 Червня 2026</p>
     </footer>
 
-    <script src="cms.js"></script>
+    <script src="cms.js?v=4"></script>
     <script>
-        // Бургер меню
         const burgerBtn = document.getElementById('burgerBtn');
         const leftMenu = document.getElementById('leftMenu');
         const navContainer = document.getElementById('navContainer');
-        burgerBtn.addEventListener('click', function(e) { 
-            e.stopPropagation(); 
-            leftMenu.classList.toggle('active'); 
-            navContainer.classList.toggle('active'); 
-        });
+        burgerBtn.addEventListener('click', function(e) { e.stopPropagation(); leftMenu.classList.toggle('active'); navContainer.classList.toggle('active'); });
 
-        // Універсальний розклад для всіх класів (виправлено баг порожнього екрану)
-        var schedules = { 
-            "1": "<tr><td>1</td><td>08:30 - 09:15</td></tr><tr><td>2</td><td>09:25 - 10:10</td></tr>", 
-            "11": "<tr><td>1</td><td>08:30 - 09:15</td></tr><tr><td>2</td><td>09:25 - 10:10</td></tr><tr><td>3</td><td>10:25 - 11:10</td></tr>" 
-        }; 
-        function changeSchedule() { 
-            const val = document.getElementById("class-select").value;
-            document.getElementById("schedule-body").innerHTML = schedules[val] || schedules["11"]; 
-        }
+        var schedules = { "1": "<tr><td>1</td><td>08:30 - 09:15</td></tr>", "11": "<tr><td>1</td><td>08:30 - 09:15</td></tr>" };
+        function changeSchedule() { document.getElementById("schedule-body").innerHTML = schedules[document.getElementById("class-select").value] || "<tr><td>1</td><td>08:30 - 09:15</td></tr>"; }
         window.onload = changeSchedule;
 
-        // Календар
         function generateCalendar() {
             const now = new Date();
             const monthNames = ["Січень", "Лютий", "Березень", "Квітень", "Травень", "Червень", "Липень", "Серпень", "Вересень", "Жовтень", "Листопад", "Грудень"];
