@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель керування ліцеєм</title>
+    <link rel="stylesheet" href="style.css?v=2">
+    <style>
+        .admin-box { max-width: 700px; margin: 40px auto; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 4px solid #224263; }
+        .admin-box h2 { color: #224263; text-align: center; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 14px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
+        .btn-admin { background: #224263; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; }
+        .panel-section { background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .hint { font-size: 12px; color: #64748b; display: block; margin-top: 2px; }
+    </style>
+</head>
+<body style="background-color: #f1f5f9; font-family: Arial, sans-serif;">
+
+    <!-- АВТОРИЗАЦІЯ -->
+    <div id="loginSection" class="admin-box">
+        <h2>🔒 Вхід для адміністратора сайту</h2>
+        <div class="form-group">
+            <label>Пароль доступу:</label>
+            <input type="password" id="passInput" placeholder="Введіть ваш пароль">
+        </div>
+        <button class="btn-admin" onclick="login()">Увійти в систему</button>
+    </div>
+
+    <!-- КОНСОЛЬ -->
+    <div id="panelSection" class="admin-box" style="display: none; max-width: 900px;">
+        <h2>Панель керування сайтом ліцею 🏫</h2>
+        <p style="text-align: center; color: #64748b; margin-top: -15px;">Зміни відображаються автоматично на всіх пристроях</p>
+
+        <div class="panel-section">
+            <h3>🗂️ 1. Створення нових вкладок у меню</h3>
+            <div style="display: flex; gap: 10px;">
+                <input type="text" id="newPageTitle" placeholder="Назва нової сторінки (наприклад: Профспілка)">
+                <button onclick="createNewPage()" style="background: #224263; color: white; border: none; padding: 0 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">Додати</button>
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <h3>📝 2. Редагування вмісту сторінок</h3>
+            <div class="form-group">
+                <label>Оберіть сторінку для зміни тексту:</label>
+                <select id="pageSelect" onchange="loadContentToEditor()"></select>
+            </div>
+            <div class="form-group">
+                <label>Текст сторінки (пишіть як у звичайному Word):</label>
+                <textarea id="pageEditor" rows="12"></textarea>
+            </div>
+            <button onclick="saveContentToServer()" class="btn-admin" style="background: #10b981;">👉 ОПУБЛІКУВАТИ ЗМІНИ НА САЙТ 👈</button>
+        </div>
+
+        <div class="panel-section">
+            <h3>📰 3. Швидка публікація новин на головну сторінку</h3>
+            <div class="form-group">
+                <label>Заголовок події:</label>
+                <input type="text" id="newsTitle" placeholder="Введіть назву шкільної новини...">
+            </div>
+            <button onclick="postNewsToServer()" class="btn-admin">Додати новину</button>
+        </div>
+
+        <button onclick="location.reload()" class="btn-admin" style="background: #64748b; margin-top: 10px;">Вийти з кабінету</button>
+    </div>
+
+    <script>
+        let globalData = {};
+        let masterPassword = '';
+
+        async function login() {
+            const p = document.getElementById('passInput').value;
+            let response = await fetch('api.php?action=get');
+            globalData = await response.json();
+            
+            // Перевірочний запит на сервер із цим паролем
+            let testAuth = await fetch('api.php?action=save', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ password: p, data: globalData })
+            });
+
+            if (testAuth.ok) {
+                masterPassword = p;
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('panelSection').style.display = 'block';
+                renderSelect();
+            } else {
+                alert('Невірний пароль доступу!');
+            }
+        }
+
+        function renderSelect() {
+            const select = document.getElementById('pageSelect');
+            select.innerHTML = globalData.pages.map(p => `<option value="${p.id}">${p.title}</option>`).join('');
+            loadContentToEditor();
+        }
+
+        function loadContentToEditor() {
+            const id = document.getElementById('pageSelect').value;
+            document.getElementById('pageEditor').value = globalData.contents[id] ? globalData.contents[id].replace(/<br\s*\/?>/mg, "\n") : '';
+        }
+
+        async function saveContentToServer() {
+            const id = document.getElementById('pageSelect').value;
+            let text = document.getElementById('pageEditor').value;
+            let formattedHtml = text.replace(/\n/g, "<br>");
+
+            if(!formattedHtml.includes('<h1>') && !formattedHtml.includes('<h2>')) {
+                const page = globalData.pages.find(p => p.id === id);
+                formattedHtml = `<h1>${page.title}</h1><p style="line-height:1.7; font-size:15px;">${formattedHtml}</p>`;
+            }
+
+            globalData.contents[id] = formattedHtml;
+            await sendUpdate();
+            alert('Зміни успішно опубліковані! Усі користувачі бачать новий текст.');
+        }
+
+        async function createNewPage() {
+            const title = document.getElementById('newPageTitle').value.trim();
+            if(!title) return alert('Введіть назву!');
+            
+            const id = "custom_" + Date.now();
+            globalData.pages.push({ id: id, title: title, url: `page.html?id=${id}` });
+            globalData.contents[id] = `<h1>${title}</h1><p>Текст буде додано незабаром.</p>`;
+            
+            await sendUpdate();
+            renderSelect();
+            document.getElementById('pageSelect').value = id;
+            loadContentToEditor();
+            document.getElementById('newPageTitle').value = '';
+            alert('Вкладку додано в меню сайту!');
+        }
+
+        async function postNewsToServer() {
+            const title = document.getElementById('newsTitle').value.trim();
+            if(!title) return alert('Введіть заголовок!');
+            
+            globalData.news.unshift({ id: Date.now(), title: title, url: '#', imgClass: 'img-news-2' });
+            await sendUpdate();
+            document.getElementById('newsTitle').value = '';
+            alert('Новину додано на головну сторінку!');
+        }
+
+        async function sendUpdate() {
+            await fetch('api.php?action=save', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ password: masterPassword, data: globalData })
+            });
+        }
+    </script>
+</body>
+</html>
