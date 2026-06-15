@@ -3,65 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Панель керування ліцеєм</title>
+    <title>Wix-Панель Нижньосірогозького ліцею</title>
     <link rel="stylesheet" href="style.css?v=2">
     <style>
-        .admin-box { max-width: 700px; margin: 40px auto; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 4px solid #224263; }
+        .admin-box { max-width: 750px; margin: 40px auto; padding: 30px; background: #fff; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-top: 4px solid #224263; }
         .admin-box h2 { color: #224263; text-align: center; margin-bottom: 20px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #475569; font-size: 14px; }
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
         .btn-admin { background: #224263; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; }
+        .btn-admin:disabled { background: #94a3b8 !important; cursor: not-allowed; }
         .panel-section { background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        
+        .wix-layout { display: flex; gap: 15px; margin-top: 15px; flex-wrap: wrap; }
+        .wix-tools { width: 200px; background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid #cbd5e1; flex-shrink: 0; }
+        .wix-tools h4 { margin: 0 0 8px 0; color: #224263; font-size: 13px; border-bottom: 2px solid #cbd5e1; padding-bottom: 4px; }
+        .tool-btn { display: block; width: 100%; background: #fff; border: 1px solid #cbd5e1; padding: 8px; margin-bottom: 6px; text-align: left; cursor: pointer; border-radius: 4px; font-weight: bold; font-size: 12px; color: #334155; }
+        
+        .wix-editor { flex: 1; min-width: 300px; }
+        .editor-header { background: #224263; padding: 8px; border-radius: 4px 4px 0 0; display: flex; gap: 5px; }
+        .editor-header button, .editor-header select { background: #fff; border: none; padding: 5px 10px; cursor: pointer; border-radius: 3px; font-weight: bold; font-size: 12px; color: #224263; }
+        .workspace-area { min-height: 380px; border: 2px solid #224263; border-radius: 0 0 4px 4px; padding: 20px; background: #fff; overflow-y: auto; outline: none; }
+        
+        .workspace-area table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        .workspace-area th, .workspace-area td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
+        .workspace-area th { background-color: #224263; color: white; }
+        
+        .admin-news-list { list-style: none; padding: 0; margin: 10px 0; max-height: 200px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 4px; background: #fff; }
+        .admin-news-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+        .btn-delete-news { background: #cf2e2e; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: bold; }
     </style>
 </head>
 <body style="background-color: #f1f5f9; font-family: Arial, sans-serif;">
 
     <div id="loginSection" class="admin-box">
-        <h2>🔒 Вхід для адміністратора сайту</h2>
+        <h2>🔒 Вхід до Wix-панелі ліцею</h2>
         <div class="form-group">
-            <label>Пароль доступу:</label>
+            <label>Пароль доступу директора:</label>
             <input type="password" id="passInput" placeholder="Введіть ваш пароль">
         </div>
-        <button class="btn-admin" onclick="login()">Увійти в систему</button>
+        <button class="btn-admin" onclick="login()">Увійти в кабінет</button>
     </div>
 
-    <div id="panelSection" class="admin-box" style="display: none; max-width: 900px;">
-        <h2>Панель керування сайтом ліцею 🏫</h2>
-        <p style="text-align: center; color: #64748b; margin-top: -15px;">Зміни відображаються автоматично на всіх пристроях</p>
+    <div id="panelSection" class="admin-box" style="display: none; max-width: 1050px;">
+        <h2>Візуальний конструктор сайту ліцею 🎨</h2>
+        <p style="text-align: center; color: #64748b; margin-top: -15px;">Усі зміни публікуються миттєво без збоїв</p>
 
         <div class="panel-section">
-            <h3>🗂️ 1. Створення нових вкладок у меню</h3>
+            <h3>🗂️ 1. Створення нових вкладок у меню сайту</h3>
             <div style="display: flex; gap: 10px;">
-                <input type="text" id="newPageTitle" placeholder="Назва нової сторінки (наприклад: Профспілка)">
-                <button onclick="createNewPage()" style="background: #224263; color: white; border: none; padding: 0 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">Додати</button>
+                <input type="text" id="newPageTitle" placeholder="Назва сторінки (наприклад: Чистота)">
+                <button id="createPageBtn" onclick="createNewPage()" style="background: #224263; color: white; border: none; padding: 0 20px; border-radius: 4px; font-weight: bold; cursor: pointer;">Створити вкладку</button>
             </div>
         </div>
 
         <div class="panel-section">
-            <h3>📝 2. Редагування вмісту сторінок</h3>
+            <h3>📝 2. Візуальне редагування вмісту сторінок та таблиць</h3>
             <div class="form-group">
-                <label>Оберіть сторінку для зміни тексту:</label>
+                <label>Оберіть сторінку для зміни тексту або таблиць:</label>
                 <select id="pageSelect" onchange="loadContentToEditor()"></select>
             </div>
-            <div class="form-group">
-                <label>Текст сторінки (пишіть як у звичайному Word):</label>
-                <textarea id="pageEditor" rows="12"></textarea>
+            
+            <div class="wix-layout">
+                <div class="wix-tools">
+                    <h4>➕ Додати елементи</h4>
+                    <button class="tool-btn" onclick="addWixElement('h2')">📌 Підзаголовок</button>
+                    <button class="tool-btn" onclick="addWixElement('p')">✍️ Новий абзац</button>
+                    <button class="tool-btn" onclick="addWixElement('table')">📊 Порожня таблиця</button>
+                    
+                    <h4 style="margin-top:12px;">🛠️ Робота з таблицями</h4>
+                    <button class="tool-btn" style="background:#f0fdf4;" onclick="manageTable('addRow')">➕ Додати рядок</button>
+                    <button class="tool-btn" style="background:#fff5f5; color:#c53030;" onclick="manageTable('deleteRow')">❌ Видалити рядок</button>
+                    
+                    <h4 style="margin-top:12px;">🔄 Скинути зміни</h4>
+                    <button class="tool-btn" style="background:#cbd5e1; text-align:center;" onclick="resetToOriginalHtml()">Скинути до оригіналу</button>
+                </div>
+                
+                <div class="wix-editor">
+                    <div class="editor-header">
+                        <button type="button" onclick="formatDoc('bold')"><b>Ж</b></button>
+                        <button type="button" onclick="formatDoc('italic')"><i>К</i></button>
+                        <button type="button" onclick="formatDoc('underline')"><u>Ч</u></button>
+                        <button type="button" onclick="formatDoc('insertUnorderedList')">• Список</button>
+                        <select onchange="formatDoc('foreColor', this.value)" style="padding:2px; font-size:11px;">
+                            <option value="#224263">Синій колір</option>
+                            <option value="#cf2e2e">Червоний колір</option>
+                            <option value="#273043">Звичайний чорний</option>
+                        </select>
+                    </div>
+                    <div id="visualWorkspace" class="workspace-area" contenteditable="true"></div>
+                </div>
             </div>
-            <button onclick="saveContentToServer()" class="btn-admin" style="background: #10b981;">👉 ОПУБЛІКУВАТИ ЗМІНИ НА САЙТ 👈</button>
+            <button id="savePageBtn" onclick="saveContentToServer()" class="btn-admin" style="background: #10b981; margin-top: 15px;">👉 ОПУБЛІКУВАТИ ЗМІНИ НА СТОРІНЦІ 👈</button>
         </div>
 
         <div class="panel-section">
-            <h3>📰 3. Швидка публікація новин з фотографією</h3>
+            <h3>📰 3. Публікація новин (Тема + Повний опис + Фото)</h3>
             <div class="form-group">
-                <label>Заголовок події:</label>
-                <input type="text" id="newsTitle" placeholder="Введіть назву шкільної новини...">
+                <label>Тема (Заголовок) новини:</label>
+                <input type="text" id="newsTitle" placeholder="Введіть короткий заголовок події...">
             </div>
             <div class="form-group">
-                <label>Прикріпити фото (просто оберіть файл з комп'ютера чи телефону):</label>
+                <label>Повний опис (Текст новини):</label>
+                <textarea id="newsText" rows="5" placeholder="Напишіть тут повний текст події..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Прикріпити фотографію:</label>
                 <input type="file" id="newsPhoto" accept="image/*">
             </div>
-            <button onclick="postNewsToServer()" class="btn-admin">Додати новину та фото</button>
+            <button id="postNewsBtn" onclick="postNewsToServer()" class="btn-admin">🔥 ОПУБЛІКУВАТИ СВІЖУ НОВИНУ</button>
+        </div>
+
+        <div class="panel-section">
+            <h3>🗑️ 4. Керування списком новин (Видалення)</h3>
+            <div id="adminNewsList" class="admin-news-list"></div>
         </div>
 
         <button onclick="location.reload()" class="btn-admin" style="background: #64748b; margin-top: 10px;">Вийти з кабінету</button>
@@ -71,25 +126,51 @@
         let globalData = {};
         let masterPassword = '';
 
+        function formatDoc(cmd, val = null) { document.execCommand(cmd, false, val); }
+
+        function addWixElement(type) {
+            const workspace = document.getElementById('visualWorkspace');
+            let html = '';
+            if(type === 'h2') html = `<h2 style="color:#224263; margin-top:20px;">Новий підзаголовок</h2>`;
+            if(type === 'p') html = `<p style="line-height:1.7; color:#273043; margin-bottom:15px;">Новий абзац тексту...</p>`;
+            if(type === 'table') html = `<table><thead><tr><th>Стовпець 1</th><th>Стовпець 2</th></tr></thead><tbody><tr><td>Дані 1</td><td>Дані 2</td></tr></tbody></table>`;
+            workspace.focus();
+            document.execCommand('insertHTML', false, html);
+        }
+
+        function manageTable(action) {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            let target = selection.anchorNode;
+            while (target && target.nodeName !== 'TABLE' && target.id !== 'visualWorkspace') { target = target.parentNode; }
+            if (!target || target.id === 'visualWorkspace') return alert('Спершу клікніть мишкою всередину потрібної таблиці!');
+            if (action === 'addRow') {
+                let row = target.insertRow(-1);
+                let colCount = target.rows[0].cells.length;
+                for (let i = 0; i < colCount; i++) { row.insertCell(i).innerHTML = "Нова комірка"; }
+            } else if (action === 'deleteRow') {
+                if (target.rows.length > 1) target.deleteRow(-1);
+            }
+        }
+
         async function login() {
             const p = document.getElementById('passInput').value;
-            let response = await fetch('api.php?action=get');
-            globalData = await response.json();
-            
-            let testAuth = await fetch('api.php?action=save', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ password: p, data: globalData })
-            });
-
-            if (testAuth.ok) {
-                masterPassword = p;
-                document.getElementById('loginSection').style.display = 'none';
-                document.getElementById('panelSection').style.display = 'block';
-                renderSelect();
-            } else {
-                alert('Невірний пароль доступу!');
-            }
+            try {
+                let response = await fetch('api.php?action=get');
+                globalData = await response.json();
+                let testAuth = await fetch('api.php?action=save', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ password: p, data: globalData })
+                });
+                if (testAuth.ok) {
+                    masterPassword = p;
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('panelSection').style.display = 'block';
+                    renderSelect();
+                    renderAdminNewsList();
+                } else { alert('Невірний пароль доступу!'); }
+            } catch(e) { alert('Помилка бази даних.'); }
         }
 
         function renderSelect() {
@@ -98,46 +179,112 @@
             loadContentToEditor();
         }
 
-        function loadContentToEditor() {
+        function renderAdminNewsList() {
+            const list = document.getElementById('adminNewsList');
+            if(!list) return;
+            if(!globalData.news || globalData.news.length === 0) {
+                list.innerHTML = '<div style="padding:15px; color:#64748b; font-style:italic; text-align:center;">Новин на сайті немає.</div>';
+                return;
+            }
+            let sortedNews = [...globalData.news].sort((a,b) => b.id - a.id);
+            list.innerHTML = sortedNews.map((n) => `
+                <div class="admin-news-item">
+                    <span>⏱️ <b>${n.date || 'Раніше'}</b> — ${n.title}</span>
+                    <button class="btn-delete-news" onclick="deleteNewsItem(${n.id})">Видалити</button>
+                </div>
+            `).join('');
+        }
+
+        async function deleteNewsItem(id) {
+            if(!confirm('Ви впевнені, що хочете видалити цю новину?')) return;
+            globalData.news = globalData.news.filter(n => n.id !== id);
+            await sendUpdate();
+            renderAdminNewsList();
+            alert('Новину видалено з сайту!');
+        }
+
+        async function loadContentToEditor() {
             const id = document.getElementById('pageSelect').value;
-            document.getElementById('pageEditor').value = globalData.contents[id] ? globalData.contents[id].replace(/<br\s*\/?>/mg, "\n") : '';
+            const workspace = document.getElementById('visualWorkspace');
+            
+            if (globalData.contents[id] && globalData.contents[id].trim() !== "") {
+                workspace.innerHTML = globalData.contents[id];
+            } else {
+                await fetchOriginalStructure(id, workspace);
+            }
+        }
+
+        async function fetchOriginalStructure(id, workspace) {
+            try {
+                workspace.innerHTML = "<p style='color:#64748b;'>⏳ Завантаження структури файлу...</p>";
+                let res = await fetch(id);
+                if (!res.ok) throw new Error();
+                let htmlText = await res.text();
+                let parser = new DOMParser();
+                let doc = parser.parseFromString(htmlText, 'text/html');
+                let mainBlock = doc.querySelector('.main-content');
+                if(mainBlock) {
+                    let h1 = mainBlock.querySelector('h1'); if(h1) h1.remove();
+                    workspace.innerHTML = mainBlock.innerHTML;
+                } else { workspace.innerHTML = "<p>Напишіть текст або додайте елементи зліва...</p>"; }
+            } catch(e) {
+                workspace.innerHTML = "<p>Сторінка готова. Додайте підзаголовки, абзаци або таблиці з меню конструктора ліворуч.</p>";
+            }
+        }
+
+        function resetToOriginalHtml() {
+            const id = document.getElementById('pageSelect').value;
+            const workspace = document.getElementById('visualWorkspace');
+            if(!confirm('Ви впевнені, що хочете видалити зміни директора та повернути оригінальну красиву таблицю з HTML-файлу?')) return;
+            globalData.contents[id] = "";
+            fetchOriginalStructure(id, workspace);
         }
 
         async function saveContentToServer() {
+            const btn = document.getElementById('savePageBtn');
+            if(btn.disabled) return;
             const id = document.getElementById('pageSelect').value;
-            let text = document.getElementById('pageEditor').value;
-            let formattedHtml = text.replace(/\n/g, "<br>");
+            let htmlContent = document.getElementById('visualWorkspace').innerHTML;
 
-            if(!formattedHtml.includes('<h1>') && !formattedHtml.includes('<h2>')) {
-                const page = globalData.pages.find(p => p.id === id);
-                formattedHtml = `<h1>${page.title}</h1><p style="line-height:1.7; font-size:15px;">${formattedHtml}</p>`;
+            if(!htmlContent || htmlContent.trim() === "" || htmlContent.includes('Завантаження поточної структури')) {
+                return alert('Помилка: неможливо зберегти порожнє поле!');
             }
 
-            globalData.contents[id] = formattedHtml;
+            btn.disabled = true; btn.innerHTML = "⏳ Публікація змін...";
+            globalData.contents[id] = htmlContent;
             await sendUpdate();
-            alert('Зміни успішно опубліковані!');
+            btn.disabled = false; btn.innerHTML = "👉 ОПУБЛІКУВАТИ ЗМІНИ НА СТОРІНЦІ 👈";
+            alert('Усі візуальні зміни та таблиці успішно опубліковано!');
         }
 
         async function createNewPage() {
+            const btn = document.getElementById('createPageBtn');
             const title = document.getElementById('newPageTitle').value.trim();
-            if(!title) return alert('Введіть назву!');
-            
+            if(!title) return alert('Введіть назву сторінки!');
+            if(btn.disabled) return;
+
+            btn.disabled = true;
             const id = "custom_" + Date.now();
             globalData.pages.push({ id: id, title: title, url: `page.html?id=${id}` });
-            globalData.contents[id] = `<h1>${title}</h1><p>Текст буде додано незабаром.</p>`;
+            globalData.contents[id] = `<h2>${title}</h2><p>Сторінку успішно активовано в системі. Наповніть її за допомогою інструментів Wix зліва.</p>`;
             
             await sendUpdate();
             renderSelect();
             document.getElementById('pageSelect').value = id;
             loadContentToEditor();
             document.getElementById('newPageTitle').value = '';
-            alert('Вкладку додано в меню сайту!');
+            btn.disabled = false;
+            alert('Сторінку створено в меню!');
         }
 
         async function postNewsToServer() {
+            const btn = document.getElementById('postNewsBtn');
             const title = document.getElementById('newsTitle').value.trim();
-            if(!title) return alert('Введіть заголовок!');
-            
+            const text = document.getElementById('newsText').value.trim();
+            if(!title || !text) return alert('Заповніть тему та опис новини!');
+            if(btn.disabled) return;
+
+            btn.disabled = true; btn.innerHTML = "⏳ Надсилання на сервер...";
             const fileInput = document.getElementById('newsPhoto');
             let finalImgUrl = 'foto/news2.jpg';
 
@@ -145,37 +292,25 @@
                 const formData = new FormData();
                 formData.append('password', masterPassword);
                 formData.append('photo', fileInput.files[0]);
-
-                let uploadResponse = await fetch('api.php?action=upload', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (uploadResponse.ok) {
-                    let uploadResult = await uploadResponse.json();
-                    finalImgUrl = uploadResult.url;
-                }
+                try {
+                    let uploadResponse = await fetch('api.php?action=upload', { method: 'POST', body: formData });
+                    if (uploadResponse.ok) { finalImgUrl = (await uploadResponse.json()).url; }
+                } catch(e) { console.log('Помилка фото.'); }
             }
 
-            // АВТОМАТИЧНА ГЕНЕРАЦІЯ ДАТИ ТА ЧАСУ ДЛЯ ДИРЕКТОРА
             const now = new Date();
-            const dateStr = now.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const timeStr = now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-            const fullDateTime = `${dateStr} ${timeStr}`;
-
-            // Закидаємо об'єкт в масив. Трампліном є унікальний id (таймстамп)
             globalData.news.unshift({ 
-                id: Date.now(), 
-                title: title, 
-                url: 'news.html', 
-                imgUrl: finalImgUrl,
-                date: fullDateTime // Дата зберігається тут
+                id: Date.now(), title: title, text: text, url: 'news.html', imgUrl: finalImgUrl,
+                date: `${now.toLocaleDateString('uk-UA')} ${now.toLocaleTimeString('uk-UA', {hour: '2-digit', minute:'2-digit'})}`
             });
 
             await sendUpdate();
             document.getElementById('newsTitle').value = '';
+            document.getElementById('newsText').value = '';
             fileInput.value = '';
-            alert('Новину з датою та фотографією успішно додано!');
+            renderAdminNewsList();
+            btn.disabled = false; btn.innerHTML = "🔥 ОПУБЛІКУВАТИ СВІЖУ НОВИНУ";
+            alert('Новину успішно опубліковано!');
         }
 
         async function sendUpdate() {
