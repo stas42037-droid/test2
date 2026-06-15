@@ -13,12 +13,10 @@
         .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; }
         .btn-admin { background: #224263; color: white; border: none; padding: 12px 20px; border-radius: 4px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; }
         .panel-section { background: #f8fafc; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        .hint { font-size: 12px; color: #64748b; display: block; margin-top: 2px; }
     </style>
 </head>
 <body style="background-color: #f1f5f9; font-family: Arial, sans-serif;">
 
-    <!-- АВТОРИЗАЦІЯ -->
     <div id="loginSection" class="admin-box">
         <h2>🔒 Вхід для адміністратора сайту</h2>
         <div class="form-group">
@@ -28,7 +26,6 @@
         <button class="btn-admin" onclick="login()">Увійти в систему</button>
     </div>
 
-    <!-- КОНСОЛЬ -->
     <div id="panelSection" class="admin-box" style="display: none; max-width: 900px;">
         <h2>Панель керування сайтом ліцею 🏫</h2>
         <p style="text-align: center; color: #64748b; margin-top: -15px;">Зміни відображаються автоматично на всіх пристроях</p>
@@ -55,12 +52,16 @@
         </div>
 
         <div class="panel-section">
-            <h3>📰 3. Швидка публікація новин на головну сторінку</h3>
+            <h3>📰 3. Швидка публікація новин з фотографією</h3>
             <div class="form-group">
                 <label>Заголовок події:</label>
                 <input type="text" id="newsTitle" placeholder="Введіть назву шкільної новини...">
             </div>
-            <button onclick="postNewsToServer()" class="btn-admin">Додати новину</button>
+            <div class="form-group">
+                <label>Прикріпити фото (просто оберіть файл з комп'ютера чи телефону):</label>
+                <input type="file" id="newsPhoto" accept="image/*">
+            </div>
+            <button onclick="postNewsToServer()" class="btn-admin">Додати новину та фото</button>
         </div>
 
         <button onclick="location.reload()" class="btn-admin" style="background: #64748b; margin-top: 10px;">Вийти з кабінету</button>
@@ -75,7 +76,6 @@
             let response = await fetch('api.php?action=get');
             globalData = await response.json();
             
-            // Перевірочний запит на сервер із цим паролем
             let testAuth = await fetch('api.php?action=save', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -115,7 +115,7 @@
 
             globalData.contents[id] = formattedHtml;
             await sendUpdate();
-            alert('Зміни успішно опубліковані! Усі користувачі бачать новий текст.');
+            alert('Зміни успішно опубліковані!');
         }
 
         async function createNewPage() {
@@ -138,10 +138,44 @@
             const title = document.getElementById('newsTitle').value.trim();
             if(!title) return alert('Введіть заголовок!');
             
-            globalData.news.unshift({ id: Date.now(), title: title, url: '#', imgClass: 'img-news-2' });
+            const fileInput = document.getElementById('newsPhoto');
+            let finalImgUrl = 'foto/news2.jpg';
+
+            if (fileInput.files.length > 0) {
+                const formData = new FormData();
+                formData.append('password', masterPassword);
+                formData.append('photo', fileInput.files[0]);
+
+                let uploadResponse = await fetch('api.php?action=upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (uploadResponse.ok) {
+                    let uploadResult = await uploadResponse.json();
+                    finalImgUrl = uploadResult.url;
+                }
+            }
+
+            // АВТОМАТИЧНА ГЕНЕРАЦІЯ ДАТИ ТА ЧАСУ ДЛЯ ДИРЕКТОРА
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+            const fullDateTime = `${dateStr} ${timeStr}`;
+
+            // Закидаємо об'єкт в масив. Трампліном є унікальний id (таймстамп)
+            globalData.news.unshift({ 
+                id: Date.now(), 
+                title: title, 
+                url: 'news.html', 
+                imgUrl: finalImgUrl,
+                date: fullDateTime // Дата зберігається тут
+            });
+
             await sendUpdate();
             document.getElementById('newsTitle').value = '';
-            alert('Новину додано на головну сторінку!');
+            fileInput.value = '';
+            alert('Новину з датою та фотографією успішно додано!');
         }
 
         async function sendUpdate() {
